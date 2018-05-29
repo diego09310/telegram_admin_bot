@@ -1,0 +1,12 @@
+[Unit]
+Description=Service for Telegram Admin bot
+After=network.target
+
+[Service]
+Type=simple
+User=USERNAME
+ExecStart=FULL_PATH_TO_EXECUTABLE
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

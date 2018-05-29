@@ -8,6 +8,7 @@ import json
 import logging
 import datetime
 from config import config_data
+import re
 
 groups_data = {}
 admin_ids = []
@@ -29,10 +30,13 @@ def notify_admins(bot, update):
     if is_message_from_known_group(update.message.chat_id):
         group_id = update.message.chat_id
         admins = get_admins_for_group(group_id)
+        bot.sendMessage(chat_id=update.message.chat_id, text="Se ha avisado a los admins")
         for admin in admins:
             try:
+                log.info(admin)
                 username = update.message.from_user.username or update.message.from_user.first_name or ""
-                bot.sendMessage(chat_id=admin["id"], text="Aviso en el grupo " + get_group_link(update.message.chat.title) + ": \n_" + username + ":_ " + update.message.text, parse_mode=ParseMode.MARKDOWN)
+                group_link, username, message_text = sanitize(get_group_link(update.message.chat.id), username, update.message.text)
+                bot.sendMessage(chat_id=admin["id"], text="Aviso en el grupo " + group_link + ": \n_" + username + ":_ " + message_text, parse_mode=ParseMode.MARKDOWN)
             except Unauthorized:
                 log.error("Bot can't initiate conversation with user " + admin["name"] + ".")
     else:
@@ -40,6 +44,9 @@ def notify_admins(bot, update):
         bot.sendMessage(chat_id=update.message.chat_id, text="Este comando debe usarse desde un grupo que conozca el bot.")
         unauthorized_user(bot, update, "notify_admins")
 
+
+def sanitize(*strings):
+    return [re.sub(r'_', '\\_', i) for i in strings]
 
 def is_user_authorized(user_id):
     admin_ids = get_admin_ids(groups_data)
@@ -61,13 +68,13 @@ def get_admins_for_group(group_id):
     group = [group for group in groups_data if group["id"] == group_id][0]
     return group["admins"]
 
-def get_group_link(group_title):
-    group = [group for group in groups_data if group["name"] == group_title][0]
+def get_group_link(group_id):
+    group = [group for group in groups_data if group["id"] == group_id][0]
     link = group["link"]
     if link is not None:
         return link
     else:
-        return "@" + group_title
+        return "@" + group.id
 
 def flatten_list(l):
     return [item for sublist in l for item in sublist]
@@ -86,6 +93,10 @@ def unauthorized_user(bot, update, command):
     log = "Date: " + date.strftime('%a %b %d %H:%M:%S %Y') + "\nUsername: " + update.message.from_user.username + " Name: " + update.message.from_user.first_name + " LastName: " + update.message.from_user.last_name + " ID: " + str(update.message.from_user.id) + "\nCommand: " + command
     f.write("%s\n" % log.encode("utf-8"))
     f.close()
+
+def incorrect_data():
+    log.warn("Incorrect data in groups.json")
+    return
 
 def ignore():
     return

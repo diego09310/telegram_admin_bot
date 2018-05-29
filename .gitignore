@@ -1,6 +1,7 @@
 # Config files
 config.py*
 groups.json
+launcher.sh
 
 # Created by https://www.gitignore.io/api/linux,python
 

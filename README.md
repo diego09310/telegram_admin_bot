@@ -14,6 +14,10 @@ There are two configuration files:
 ## Logs
 Two log files are generated: regular logfile, with the information from the logger and unauthorized log, with a list of "unauthorized" access attempts.
 
+## Create systemd service
+To create a service to control the bot in systemd, copy the file `admin\_bot.service` to `/etc/systemd/system/` and change `USERNAME` and `FULL_PATH_TO_EXECUTABLE`. Also edit the file `launcher.sh` with the correct path.
+Use `sudo systemctl daemon-reload` to reload the services, then use `systemctl <command> admin_bbot.service` with `enable` for start at boot, `start` to start it and `stop` to stop it.
+
 ## Future
 I have some ideas I'd like to implement. If I have time and I'm motivated or someone wants to help.  
 Ideas:  
